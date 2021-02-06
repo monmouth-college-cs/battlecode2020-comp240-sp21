@@ -64,9 +64,13 @@ public strictfp class RobotPlayer {
 
     static void runHQ() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.MINER, dir);
-    }
+            if ((rc.getRoundNum() < 100 || rc.getRoundNum() >200) && (rc.getRoundNum()%2 == 0))
+                tryBuild(RobotType.MINER, dir);
 
+    }
+    //	getRoundNum() getTeamSoup()
+    // canDepositSoup(Direction dir) canMineSoup(Direction dir) canMove(Direction dir) senseRobot(int id)
+    // depositSoup(Direction dir, int amount) getSoupCarrying() senseFlooding(MapLocation loc) senseNearbySoup()
     static void runMiner() throws GameActionException {
         tryBlockchain();
         tryMove(randomDirection());
@@ -74,7 +78,8 @@ public strictfp class RobotPlayer {
             System.out.println("I moved!");
         // tryBuild(randomSpawnedByMiner(), randomDirection());
         for (Direction dir : directions)
-            tryBuild(RobotType.FULFILLMENT_CENTER, dir);
+            tryBuild(RobotType.DESIGN_SCHOOL, dir);
+
         for (Direction dir : directions)
             if (tryRefine(dir))
                 System.out.println("I refined soup! " + rc.getTeamSoup());
@@ -92,7 +97,8 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
-
+        for (Direction dir : directions)
+            tryBuild(RobotType.LANDSCAPER, dir);
     }
 
     static void runFulfillmentCenter() throws GameActionException {
