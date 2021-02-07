@@ -1,8 +1,12 @@
 package protobot;
 import battlecode.common.*;
 
+import static battlecode.common.Team.A;
+import static battlecode.common.Team.B;
+
 public strictfp class RobotPlayer {
     static RobotController rc;
+    static Team enemyTeam = A.opponent();
 
     static Direction[] directions = {
         Direction.NORTH,
@@ -128,7 +132,27 @@ public strictfp class RobotPlayer {
     }
 
     static void runNetGun() throws GameActionException {
-
+        Team enemy = rc.getTeam().opponent();
+        RobotInfo target = null;
+        MapLocation myLocation = rc.getLocation();
+        int distSquared = -1;
+        RobotInfo[] nearbyEnemy = rc.senseNearbyRobots(GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, enemy);
+        for (RobotInfo nearbyRobot : nearbyEnemy) {
+            if (rc.canShootUnit(nearbyRobot.ID)) {
+                if (target == null) { // separate check to avoid extra computation of distance
+                    target = nearbyRobot;
+                    distSquared = myLocation.distanceSquaredTo(target.location);
+                }
+                int nearbyDist = myLocation.distanceSquaredTo(target.location);
+                if (nearbyDist < distSquared) { //Identify nearest enemy
+                    target = nearbyRobot;
+                    distSquared = nearbyDist;
+                }
+            }
+        }
+        if (target != null) {
+            rc.shootUnit(target.ID);
+        }
     }
 
     /**
