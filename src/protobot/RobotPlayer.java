@@ -1,12 +1,13 @@
 package protobot;
 import battlecode.common.*;
 
+import java.text.BreakIterator;
+
 import static battlecode.common.Team.A;
 import static battlecode.common.Team.B;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
-    static Team enemyTeam = A.opponent();
 
     static Direction[] directions = {
         Direction.NORTH,
@@ -73,23 +74,43 @@ public strictfp class RobotPlayer {
 
     }
     //	getRoundNum() getTeamSoup()
+    //senceNearbySoup -> canMineSoup -> mineSoup
     // canDepositSoup(Direction dir) canMineSoup(Direction dir) canMove(Direction dir) senseRobot(int id)
     // depositSoup(Direction dir, int amount) getSoupCarrying() senseFlooding(MapLocation loc) senseNearbySoup()
     static void runMiner() throws GameActionException {
+        MapLocation myLocation = rc.getLocation();
         tryBlockchain();
-        tryMove(randomDirection());
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
+        //tryMove(randomDirection());
+        //if (tryMove(randomDirection()))
+        //    System.out.println("I moved!");
         // tryBuild(randomSpawnedByMiner(), randomDirection());
-        for (Direction dir : directions)
-            tryBuild(RobotType.DESIGN_SCHOOL, dir);
+
+        //for (Direction dir : directions) {
+        //    MapLocation loc = myLocation.add(dir);
+        //    if (rc.canSenseLocation(loc)) {
+        //        //RobotInfo r = rc.senseSoup(loc);
+        //    }
+        //}
+
+        MapLocation[] nearbySoup = rc.senseNearbySoup();
+        Direction target = null;
+        int distance = -1;
+        for (MapLocation soupLocation : nearbySoup) {
+            if (rc.canMineSoup(myLocation.directionTo(soupLocation))) {
+                target = myLocation.directionTo(soupLocation);
+                if (tryMine(target));
+                System.out.println("I mined soup! " + rc.getSoupCarrying());
+                break;
+            }
+        }
+
+        if (rc.getRoundNum() < 100 || rc.getRoundNum() >200) //Change (identify if there exists a school)
+            for (Direction dir : directions)
+                tryBuild(RobotType.DESIGN_SCHOOL, dir);
 
         for (Direction dir : directions)
             if (tryRefine(dir))
                 System.out.println("I refined soup! " + rc.getTeamSoup());
-        for (Direction dir : directions)
-            if (tryMine(dir))
-                System.out.println("I mined soup! " + rc.getSoupCarrying());
     }
 
     static void runRefinery() throws GameActionException {
