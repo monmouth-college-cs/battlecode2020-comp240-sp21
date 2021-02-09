@@ -81,10 +81,12 @@ public strictfp class RobotPlayer {
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
-        for Direction dir : directions) {
-            int soupminer=rc.getSoupCarrying());
+        for (Direction dir : directions) {
+            int soupminer=rc.getSoupCarrying();
             if (soupminer > 50) {
                 tryMove(Direction.EAST);
+            }else {
+                tryMove(Direction.WEST);
             }
         }
 
