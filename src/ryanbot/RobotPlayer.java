@@ -65,6 +65,8 @@ public strictfp class RobotPlayer {
     static void runHQ() throws GameActionException {
         for (Direction dir : directions)
             tryBuild(RobotType.MINER, dir);
+        for (Direction dir : directions)
+            tryBuild(RobotType.REFINERY, dir);
     }
 
     static void runMiner() throws GameActionException {
