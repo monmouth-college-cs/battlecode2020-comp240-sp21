@@ -131,7 +131,7 @@ public strictfp class RobotPlayer {
      * @return a random Direction
      */
     static Direction randomDirection() {
-        return directions[(int) (Math.random() * directions.length)];
+        return directions[(int) (7 - (Math.random() * directions.length))];
     }
 
     /**
