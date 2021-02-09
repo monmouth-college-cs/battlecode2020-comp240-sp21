@@ -1,5 +1,6 @@
 package protobot;
 import battlecode.common.*;
+import sun.font.TrueTypeFont;
 
 import java.text.BreakIterator;
 
@@ -8,6 +9,10 @@ import static battlecode.common.Team.B;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
+    static boolean RefineryExist = false;
+    static boolean FulfillmentExist = false;
+    static boolean SchoolExist = false;
+    static int NMiners = 0;
 
     static Direction[] directions = {
         Direction.NORTH,
@@ -68,22 +73,24 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        for (Direction dir : directions)
-            if ((rc.getRoundNum() < 100 || rc.getRoundNum() >200) && (rc.getRoundNum()%2 == 0))
-                tryBuild(RobotType.MINER, dir);
-
+        if (NMiners < 6) {
+            for (Direction dir : directions) {
+                if(rc.canBuildRobot(RobotType.MINER, dir)){
+                    rc.buildRobot(RobotType.MINER, dir);
+                    NMiners += 1;
+                }
+                //(RobotType.MINER, dir);
+            }
+        }
     }
-    //	getRoundNum() getTeamSoup()
-    //senceNearbySoup -> canMineSoup -> mineSoup
-    // canDepositSoup(Direction dir) canMineSoup(Direction dir) canMove(Direction dir) senseRobot(int id)
-    // depositSoup(Direction dir, int amount) getSoupCarrying() senseFlooding(MapLocation loc) senseNearbySoup()
+
+
     static void runMiner() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
         tryBlockchain();
         //tryMove(randomDirection());
         //if (tryMove(randomDirection()))
         //    System.out.println("I moved!");
-        // tryBuild(randomSpawnedByMiner(), randomDirection());
 
         //for (Direction dir : directions) {
         //    MapLocation loc = myLocation.add(dir);
@@ -93,20 +100,56 @@ public strictfp class RobotPlayer {
         //}
 
         MapLocation[] nearbySoup = rc.senseNearbySoup();
+        RobotInfo[] nearRobots = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), rc.getTeam());
         Direction target = null;
-        int distance = -1;
-        for (MapLocation soupLocation : nearbySoup) {
-            if (rc.canMineSoup(myLocation.directionTo(soupLocation))) {
-                target = myLocation.directionTo(soupLocation);
-                if (tryMine(target));
+        MapLocation objective = null;
+
+        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || (rc.getRoundNum() < 30 && rc.getSoupCarrying() >= 70)) {
+            for (RobotInfo bot : nearRobots) {
+                if (bot.getType() == RobotType.REFINERY || bot.getType() == RobotType.HQ) {
+                    int distToNew = myLocation.distanceSquaredTo(bot.getLocation());
+                    objective = bot.getLocation();
+                }
+            }
+        }
+
+        for (MapLocation soupLocation : nearbySoup) { //Looks for near by soup to mine
+            if (rc.canMineSoup(myLocation.directionTo(soupLocation))) { //Checks if it is possible to mine
+                target = myLocation.directionTo(soupLocation); //gets the direction
+                rc.mineSoup(target);
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
                 break;
             }
         }
 
-        if (rc.getRoundNum() < 100 || rc.getRoundNum() >200) //Change (identify if there exists a school)
-            for (Direction dir : directions)
-                tryBuild(RobotType.DESIGN_SCHOOL, dir);
+        if (RefineryExist == false) {
+            for (Direction dir : directions) {
+                if (rc.canBuildRobot(RobotType.REFINERY, dir)) {
+                    rc.buildRobot(RobotType.REFINERY, dir);
+                    RefineryExist = true;
+                }
+            }
+        }
+
+        if (FulfillmentExist == false) {
+            for (Direction dir : directions) {
+                if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
+                    rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
+                    FulfillmentExist = true;
+                }
+            }
+        }
+
+        if (SchoolExist == false) {
+            for (Direction dir : directions){
+                if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
+                    rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
+                    SchoolExist = true;
+                }
+            }
+        }
+
+        System.out.println("miner " + NMiners + "refinery " + RefineryExist + "school " + SchoolExist+ "dron " + FulfillmentExist);
 
         for (Direction dir : directions)
             if (tryRefine(dir))
