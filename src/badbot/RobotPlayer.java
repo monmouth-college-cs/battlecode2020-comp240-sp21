@@ -1,6 +1,8 @@
 package badbot;
 import battlecode.common.*;
 
+import java.awt.*;
+
 public strictfp class RobotPlayer {
     static RobotController rc;
 
@@ -63,24 +65,29 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        for (Direction dir : directions)
+        for (Direction dir : directions){
             tryBuild(RobotType.MINER, dir);
+        }
+
+
     }
 
     static void runMiner() throws GameActionException {
-        tryBlockchain();
-        tryMove(randomDirection());
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
-        // tryBuild(randomSpawnedByMiner(), randomDirection());
         for (Direction dir : directions)
             tryBuild(RobotType.FULFILLMENT_CENTER, dir);
-        for (Direction dir : directions)
+        //tryBlockchain();
+        for (Direction dir : directions) {
             if (tryRefine(dir))
                 System.out.println("I refined soup! " + rc.getTeamSoup());
+        }
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
+        tryMove(randomDirection());
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+
+
     }
 
     static void runRefinery() throws GameActionException {
@@ -92,7 +99,6 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
-
     }
 
     static void runFulfillmentCenter() throws GameActionException {
