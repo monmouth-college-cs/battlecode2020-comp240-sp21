@@ -1,4 +1,4 @@
-package examplefuncsplayer;
+package MyFirstPlayer;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
@@ -81,10 +81,21 @@ public strictfp class RobotPlayer {
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
+        for (Direction dir : directions) {
+            int soupminer=rc.getSoupCarrying();
+            if (soupminer > 50) {
+                tryMove(Direction.EAST);
+            }else {
+                tryMove(Direction.WEST);
+            }
+        }
+
+
     }
 
     static void runRefinery() throws GameActionException {
         // System.out.println("Pollution: " + rc.sensePollution(rc.getLocation()));
+
     }
 
     static void runVaporator() throws GameActionException {
@@ -131,7 +142,7 @@ public strictfp class RobotPlayer {
      * @return a random Direction
      */
     static Direction randomDirection() {
-        return directions[(int) (7 - (Math.random() * directions.length))];
+        return directions[(int) (Math.random() * directions.length)];
     }
 
     /**

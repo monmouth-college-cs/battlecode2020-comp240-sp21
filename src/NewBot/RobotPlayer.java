@@ -76,8 +76,17 @@ public strictfp class RobotPlayer {
         for (Direction dir : directions)
             tryBuild(RobotType.FULFILLMENT_CENTER, dir);
         for (Direction dir : directions)
-            if (tryRefine(dir))
+            tryBuild(RobotType.DESIGN_SCHOOL, dir);
+        for (Direction dir : directions)
+            tryBuild(RobotType.REFINERY, dir);
+        for (Direction dir : directions)
+            tryBuild(RobotType.VAPORATOR, dir);
+        for (Direction dir : directions)
+            tryBuild(RobotType.NET_GUN, dir);
+        for (Direction dir : directions)
+            if (tryRefine(dir)) {
                 System.out.println("I refined soup! " + rc.getTeamSoup());
+            }
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
@@ -131,7 +140,7 @@ public strictfp class RobotPlayer {
      * @return a random Direction
      */
     static Direction randomDirection() {
-        return directions[(int) (7 - (Math.random() * directions.length))];
+        return directions[(int) (Math.random() * directions.length)];
     }
 
     /**
