@@ -203,12 +203,12 @@ public strictfp class RobotPlayer {
         RobotInfo[] nearbyEnemy = rc.senseNearbyRobots(GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED, enemy);
         for (RobotInfo nearbyRobot : nearbyEnemy) {
             if (rc.canShootUnit(nearbyRobot.ID)) {
-                if (target == null) { // separate check to avoid extra computation of distance
+                if (target == null) {
                     target = nearbyRobot;
                     distSquared = myLocation.distanceSquaredTo(target.location);
                 }
                 int nearbyDist = myLocation.distanceSquaredTo(target.location);
-                if (nearbyDist < distSquared) { //Identify nearest enemy
+                if (nearbyDist < distSquared) {
                     target = nearbyRobot;
                     distSquared = nearbyDist;
                 }
