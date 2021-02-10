@@ -78,7 +78,7 @@ public strictfp class RobotPlayer {
                     hqLoc = robot.location;
                 }
             }
-        } 
+        }
 
         tryBlockchain();
         for (Direction dir : directions)
@@ -87,8 +87,14 @@ public strictfp class RobotPlayer {
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
-        tryMove(randomDirection());
-        if (tryMove(randomDirection()))
+        if (rc.getSoupCarrying() == 100) {
+            System.out.println("at the soup limit: " + rc.getSoupCarrying());
+            // time to go back to HQ
+            Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+            if(tryMove(dirToHQ));
+                System.out.println("moved towards HQ");
+        } else if (tryMove(randomDirection()))
+            // otherwise, move randomly as usual
             System.out.println("I moved!");
 
 
