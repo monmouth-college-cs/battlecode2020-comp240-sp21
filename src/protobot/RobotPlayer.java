@@ -280,7 +280,6 @@ public strictfp class RobotPlayer {
     /**
      * Attempts to move in a given direction.
      *
-     * @param dir The intended direction of movement
      * @return true if a move was performed
      * @throws GameActionException
      */
