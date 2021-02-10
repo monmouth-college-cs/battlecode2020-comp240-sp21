@@ -100,7 +100,6 @@ public strictfp class RobotPlayer {
 
 
     static void runMiner() throws GameActionException {
-        findHQ();
         MapLocation myLocation = rc.getLocation();
         tryBlockchain();
         //tryMove(randomDirection());
@@ -180,8 +179,9 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
-        for (Direction dir : directions)
+        for (Direction dir : directions) {
             tryBuild(RobotType.LANDSCAPER, dir);
+            }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
@@ -190,8 +190,20 @@ public strictfp class RobotPlayer {
     }
 
     static void runLandscaper() throws GameActionException {
-        
-
+        if (rc.getDirtCarrying() == 0) {
+            tryDig();
+        }
+        if (hqLoc != null) {
+            for (Direction dir : directions) {
+                MapLocation tiletoCheck = hqLoc.add(dir);
+                if (rc.getLocation().distanceSquaredTo(tiletoCheck) < 4
+                        && rc.canDepositDirt(rc.getLocation().directionTo(tiletoCheck))) {
+                    rc.depositDirt(rc.getLocation().directionTo(tiletoCheck));
+                    System.out.println("built a wall");
+                }
+            }
+        }
+        tryMove(randomDirection());
     }
 
     static void runDeliveryDrone() throws GameActionException {
@@ -276,6 +288,15 @@ public strictfp class RobotPlayer {
      * @return true if a move was performed
      * @throws GameActionException
      */
+    static boolean tryDig() throws GameActionException {
+        Direction dir = randomDirection();
+        if (rc.canDigDirt(dir)){
+            rc.digDirt(dir);
+            return true;
+        }
+        return false;
+    }
+
     static boolean tryMove(Direction dir) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         if (rc.isReady() && rc.canMove(dir)) {
