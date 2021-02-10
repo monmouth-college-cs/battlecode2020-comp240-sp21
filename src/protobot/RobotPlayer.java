@@ -73,7 +73,7 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        if (NMiners < 6) {
+        if (NMiners < 6 || (rc.getRoundNum() < 100)) {
             for (Direction dir : directions) {
                 if(rc.canBuildRobot(RobotType.MINER, dir)){
                     rc.buildRobot(RobotType.MINER, dir);
@@ -131,16 +131,16 @@ public strictfp class RobotPlayer {
             }
         }
 
-        if (FulfillmentExist == false) {
-            for (Direction dir : directions) {
-                if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
-                    rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
-                    FulfillmentExist = true;
-                }
-            }
-        }
+        //if (FulfillmentExist == false) {
+        //    for (Direction dir : directions) {
+        //        if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
+        //            rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
+        //            FulfillmentExist = true;
+        //        }
+        //    }
+        //}
 
-        if (SchoolExist == false) {
+        if (SchoolExist == false && (rc.getRoundNum() < 120)) {
             for (Direction dir : directions){
                 if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
                     rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
