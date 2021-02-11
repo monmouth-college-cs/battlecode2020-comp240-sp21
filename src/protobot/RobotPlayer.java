@@ -28,6 +28,7 @@ public strictfp class RobotPlayer {
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
     static int turnCount;
+    static MapLocation hqLoc;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -72,8 +73,21 @@ public strictfp class RobotPlayer {
         }
     }
 
+    static void findHQ() throws GameActionException {
+        if (hqLoc == null) {
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    hqLoc = robot.location;
+                }
+            }
+        } else {
+            System.out.println("HQ loc: " + hqLoc);
+        }
+    }
+
     static void runHQ() throws GameActionException {
-        if (NMiners < 6) {
+        if (NMiners < 6 || (rc.getRoundNum() < 100)) {
             for (Direction dir : directions) {
                 if(rc.canBuildRobot(RobotType.MINER, dir)){
                     rc.buildRobot(RobotType.MINER, dir);
@@ -131,16 +145,16 @@ public strictfp class RobotPlayer {
             }
         }
 
-        if (FulfillmentExist == false) {
-            for (Direction dir : directions) {
-                if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
-                    rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
-                    FulfillmentExist = true;
-                }
-            }
-        }
+        //if (FulfillmentExist == false) {
+        //    for (Direction dir : directions) {
+        //        if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
+        //            rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
+        //            FulfillmentExist = true;
+        //        }
+        //    }
+        //}
 
-        if (SchoolExist == false) {
+        if (SchoolExist == false && (rc.getRoundNum() < 120)) {
             for (Direction dir : directions){
                 if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
                     rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
@@ -165,8 +179,9 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
-        for (Direction dir : directions)
+        for (Direction dir : directions) {
             tryBuild(RobotType.LANDSCAPER, dir);
+            }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
@@ -175,7 +190,20 @@ public strictfp class RobotPlayer {
     }
 
     static void runLandscaper() throws GameActionException {
-
+        if (rc.getDirtCarrying() == 0) {
+            tryDig();
+        }
+        if (hqLoc != null) {
+            for (Direction dir : directions) {
+                MapLocation tiletoCheck = hqLoc.add(dir);
+                if (rc.getLocation().distanceSquaredTo(tiletoCheck) < 4
+                        && rc.canDepositDirt(rc.getLocation().directionTo(tiletoCheck))) {
+                    rc.depositDirt(rc.getLocation().directionTo(tiletoCheck));
+                    System.out.println("built a wall");
+                }
+            }
+        }
+        tryMove(randomDirection());
     }
 
     static void runDeliveryDrone() throws GameActionException {
@@ -260,6 +288,15 @@ public strictfp class RobotPlayer {
      * @return true if a move was performed
      * @throws GameActionException
      */
+    static boolean tryDig() throws GameActionException {
+        Direction dir = randomDirection();
+        if (rc.canDigDirt(dir)){
+            rc.digDirt(dir);
+            return true;
+        }
+        return false;
+    }
+
     static boolean tryMove(Direction dir) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         if (rc.isReady() && rc.canMove(dir)) {
