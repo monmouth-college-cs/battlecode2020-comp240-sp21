@@ -17,7 +17,19 @@ public strictfp class RobotPlayer {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
+    static boolean nearbyRobot(RobotType target) throws GameActionException{
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for(RobotInfo r : robots){
+            if(r.getType() == target){
+                return true;
+            }
+        }
+        return false;
+    }
+
     static int turnCount;
+    static MapLocation hqLoc;
+    static int numMiners;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -31,6 +43,7 @@ public strictfp class RobotPlayer {
         RobotPlayer.rc = rc;
 
         turnCount = 0;
+
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         while (true) {
@@ -63,33 +76,51 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        for (Direction dir : directions)
-            tryBuild(RobotType.MINER, dir);
+        if(numMiners < 10) {
+            for (Direction dir : directions)
+                if (tryBuild(RobotType.MINER, dir)) {
+                    numMiners++;
+                }
+        }
     }
 
     static void runMiner() throws GameActionException {
-        tryBlockchain();
-        tryMove(randomDirection());
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
-        // tryBuild(randomSpawnedByMiner(), randomDirection());
-        for (Direction dir : directions)
-            tryBuild(RobotType.FULFILLMENT_CENTER, dir);
-        for (Direction dir : directions)
-            if (tryRefine(dir))
-                System.out.println("I refined soup! " + rc.getTeamSoup());
-        for (Direction dir : directions)
-            if (tryMine(dir))
-                System.out.println("I mined soup! " + rc.getSoupCarrying());
-        for (Direction dir : directions) {
-            int soupminer=rc.getSoupCarrying();
-            if (soupminer > 50) {
-                tryMove(Direction.EAST);
-            }else {
-                tryMove(Direction.WEST);
+        if (hqLoc == null) {
+            // search surroundings for HQ
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    hqLoc = robot.location;
+                }
             }
         }
 
+        tryBlockchain();
+        for (Direction dir : directions)
+            if (tryRefine(dir))
+                System.out.println("I refined soup! " + rc.getTeamSoup());
+
+
+        for (Direction dir : directions)
+            if (tryMine(dir))
+                System.out.println("I mined soup! " + rc.getSoupCarrying());
+
+
+        if (!nearbyRobot(RobotType.FULFILLMENT_CENTER)) {
+            if (tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection())) {
+                System.out.println("I made a sad Amazon building!");
+            }
+        }
+        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+            System.out.println("at the soup limit: " + rc.getSoupCarrying());
+            // time to go back to HQ
+            Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+            if (tryMove(dirToHQ))
+                System.out.println("moved towards HQ");
+        } else if (tryMove(randomDirection())) {
+            // otherwise, move randomly as usual
+            System.out.println("I moved!");
+        }
 
     }
 
@@ -108,7 +139,7 @@ public strictfp class RobotPlayer {
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.DELIVERY_DRONE, dir);
+            if(tryBuild(RobotType.DELIVERY_DRONE, dir));
     }
 
     static void runLandscaper() throws GameActionException {
