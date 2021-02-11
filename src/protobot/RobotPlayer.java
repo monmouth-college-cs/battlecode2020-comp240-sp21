@@ -87,13 +87,15 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
+        if(hqLoc == null){
+            findHQ();
+        }
         if (NMiners < 6 || (rc.getRoundNum() < 100)) {
             for (Direction dir : directions) {
                 if(rc.canBuildRobot(RobotType.MINER, dir)){
                     rc.buildRobot(RobotType.MINER, dir);
                     NMiners += 1;
                 }
-                //(RobotType.MINER, dir);
             }
         }
     }
@@ -103,34 +105,37 @@ public strictfp class RobotPlayer {
         MapLocation myLocation = rc.getLocation();
         tryBlockchain();
 
-        MapLocation[] nearbySoup = rc.senseNearbySoup();
+        MapLocation[] nearSoup = rc.senseNearbySoup();
         RobotInfo[] nearRobots = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), rc.getTeam());
         Direction target = null;
         MapLocation objective = null;
 
-        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit || (rc.getRoundNum() < 30 && rc.getSoupCarrying() >= 70)) {
-            for (RobotInfo bot : nearRobots) {
-                if (bot.getType() == RobotType.REFINERY || bot.getType() == RobotType.HQ) {
-                    int distToNew = myLocation.distanceSquaredTo(bot.getLocation());
-                    objective = bot.getLocation();
-                }
+        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
+            target = rc.getLocation().directionTo(hqLoc);
+            if (movingTo(target)){
+                System.out.println("Going to refine soup");
             }
         }
-
-        if (rc.getRoundNum() > 100) {
-            tryMove(randomDirection());
-            if (tryMove(randomDirection()))
-                System.out.println("I moved!");
-        }
-
-        for (MapLocation soupLocation : nearbySoup) { //Looks for near by soup to mine
-            if (rc.canMineSoup(myLocation.directionTo(soupLocation))) { //Checks if it is possible to mine
-                target = myLocation.directionTo(soupLocation); //gets the direction
-                rc.mineSoup(target);
-                System.out.println("I mined soup! " + rc.getSoupCarrying());
+        else {
+            for (MapLocation Soup : nearSoup) {
+                if (rc.canMineSoup(myLocation.directionTo(Soup))) {
+                    rc.mineSoup(myLocation.directionTo(Soup));
+                    System.out.println("I mined soup! " + rc.getSoupCarrying());
+                }
+                else{
+                    target = rc.getLocation().directionTo(Soup);
+                    if (movingTo(target)){
+                        System.out.println("Going to mine soup");
+                    }
+                }
                 break;
             }
         }
+        //if (rc.getRoundNum() > 100) {
+        //    tryMove(randomDirection());
+        //    if (tryMove(randomDirection()))
+        //        System.out.println("I moved!");
+        //}
 
         if (RefineryExist == false) {
             for (Direction dir : directions) {
@@ -151,19 +156,13 @@ public strictfp class RobotPlayer {
         //}
 
         if (SchoolExist == false && (rc.getRoundNum() < 120)) {
-            for (Direction dir : directions){
+            for (Direction dir : directions) {
                 if (rc.canBuildRobot(RobotType.DESIGN_SCHOOL, dir)) {
                     rc.buildRobot(RobotType.DESIGN_SCHOOL, dir);
                     SchoolExist = true;
                 }
             }
         }
-
-        System.out.println("miner " + NMiners + "refinery " + RefineryExist + "school " + SchoolExist+ "dron " + FulfillmentExist);
-
-        for (Direction dir : directions)
-            if (tryRefine(dir))
-                System.out.println("I refined soup! " + rc.getTeamSoup());
     }
 
     static void runRefinery() throws GameActionException {
@@ -243,6 +242,15 @@ public strictfp class RobotPlayer {
         }
     }
 
+    static boolean movingTo(Direction dir) throws GameActionException {
+        Direction[] toTry = {dir, dir.rotateLeft(),dir.rotateRight(),dir.rotateLeft().rotateLeft(),dir.rotateRight().rotateRight()};
+        for (Direction direction : toTry) {
+            if (tryMove(direction)) {
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * Returns a random Direction.
      *
