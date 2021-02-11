@@ -1,4 +1,4 @@
-package MyFirstPlayer;
+package ryansbot;
 import battlecode.common.*;
 
 public strictfp class RobotPlayer {
@@ -17,19 +17,7 @@ public strictfp class RobotPlayer {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
-    static boolean nearbyRobot(RobotType target) throws GameActionException{
-        RobotInfo[] robots = rc.senseNearbyRobots();
-        for(RobotInfo r : robots){
-            if(r.getType() == target){
-                return true;
-            }
-        }
-        return false;
-    }
-
     static int turnCount;
-    static MapLocation hqLoc;
-    static int numMiners;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -43,7 +31,6 @@ public strictfp class RobotPlayer {
         RobotPlayer.rc = rc;
 
         turnCount = 0;
-
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         while (true) {
@@ -76,57 +63,32 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        if(numMiners < 10) {
-            for (Direction dir : directions)
-                if (tryBuild(RobotType.MINER, dir)) {
-                    numMiners++;
-                }
-        }
+        int minerCount;
+        minerCount = 0;
+        for (Direction dir : directions)
+            if (minerCount < 8 && tryBuild(RobotType.MINER, dir)) {
+                minerCount++;
+            }
     }
 
     static void runMiner() throws GameActionException {
-        if (hqLoc == null) {
-            // search surroundings for HQ
-            RobotInfo[] robots = rc.senseNearbyRobots();
-            for (RobotInfo robot : robots) {
-                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
-                    hqLoc = robot.location;
-                }
-            }
-        }
-
         tryBlockchain();
+        tryMove(randomDirection());
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+        // tryBuild(randomSpawnedByMiner(), randomDirection());
+        for (Direction dir : directions)
+            tryBuild(RobotType.FULFILLMENT_CENTER, dir);
         for (Direction dir : directions)
             if (tryRefine(dir))
                 System.out.println("I refined soup! " + rc.getTeamSoup());
-
-
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
-
-
-        if (!nearbyRobot(RobotType.FULFILLMENT_CENTER)) {
-            if (tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection())) {
-                System.out.println("I made a sad Amazon building!");
-            }
-        }
-        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-            System.out.println("at the soup limit: " + rc.getSoupCarrying());
-            // time to go back to HQ
-            Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-            if (tryMove(dirToHQ))
-                System.out.println("moved towards HQ");
-        } else if (tryMove(randomDirection())) {
-            // otherwise, move randomly as usual
-            System.out.println("I moved!");
-        }
-
     }
 
     static void runRefinery() throws GameActionException {
         // System.out.println("Pollution: " + rc.sensePollution(rc.getLocation()));
-
     }
 
     static void runVaporator() throws GameActionException {
@@ -139,7 +101,7 @@ public strictfp class RobotPlayer {
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            if(tryBuild(RobotType.DELIVERY_DRONE, dir));
+            tryBuild(RobotType.DELIVERY_DRONE, dir);
     }
 
     static void runLandscaper() throws GameActionException {
@@ -173,7 +135,7 @@ public strictfp class RobotPlayer {
      * @return a random Direction
      */
     static Direction randomDirection() {
-        return directions[(int) (Math.random() * directions.length)];
+        return directions[(int) (7 - (Math.random() * directions.length))];
     }
 
     /**
