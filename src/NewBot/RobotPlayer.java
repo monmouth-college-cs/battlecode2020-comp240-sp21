@@ -113,12 +113,14 @@ public strictfp class RobotPlayer {
     static void runLandscaper() throws GameActionException {
         tryBlockchain();
         tryMove(randomDirection());
-        for (Direction dir : directions)
-            if(tryDig(dir)) {
-                rc.getDirtCarrying(); }
-            if(tryDeposit(dir)){
-                rc.depositDirt(); }
-
+        for (Direction dir : directions) {
+            if (tryDig(dir)) {
+                rc.getDirtCarrying();
+            }
+            if (tryDeposit(dir)) {
+                rc.depositDirt(dir);
+            }
+        }
     }
 
     static void runDeliveryDrone() throws GameActionException {
@@ -243,7 +245,7 @@ public strictfp class RobotPlayer {
 
     static boolean tryDeposit(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canDepositDirt(dir)) {
-            rc.depositDirt(dir, rc.getDirtCarrying());
+            rc.depositDirt(dir);
             return true;
         }   else return false;
     }

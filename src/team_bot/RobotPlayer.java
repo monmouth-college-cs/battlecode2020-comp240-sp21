@@ -29,6 +29,7 @@ public strictfp class RobotPlayer {
     static int numNet_Guns = 0;
     // designate a spawnedByMiner bot for this bot to spawn if its a miner
     static RobotType miner_bot_spawn;
+    static int numLandscapers = 0;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -129,7 +130,11 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
-
+        for (Direction dir : directions){
+            if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
+                System.out.println("landscaper!");
+            }
+        }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
@@ -138,7 +143,16 @@ public strictfp class RobotPlayer {
     }
 
     static void runLandscaper() throws GameActionException {
-
+        tryBlockchain();
+        tryMove(randomDirection());
+        for (Direction dir : directions) {
+            if (tryDig(dir)) {
+                rc.getDirtCarrying();
+            }
+            if (tryDeposit(dir)) {
+                rc.depositDirt(dir);
+            }
+        }
     }
 
     static void runDeliveryDrone() throws GameActionException {
@@ -231,6 +245,13 @@ public strictfp class RobotPlayer {
         return false;
     }
 
+    static boolean tryDig(Direction dir) throws GameActionException {
+        if (rc.isReady() && rc.canDigDirt(dir)) {
+            rc.digDirt(dir);
+            return true;
+        }   else return false;
+    }
+
     static boolean tryMove() throws GameActionException {
         for (Direction dir : directions)
             if (tryMove(dir))
@@ -315,6 +336,13 @@ public strictfp class RobotPlayer {
             rc.depositSoup(dir, rc.getSoupCarrying());
             return true;
         } else return false;
+    }
+
+    static boolean tryDeposit(Direction dir) throws GameActionException {
+        if (rc.isReady() && rc.canDepositDirt(dir)) {
+            rc.depositDirt(dir);
+            return true;
+        }   else return false;
     }
 
 
