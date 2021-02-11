@@ -17,6 +17,16 @@ public strictfp class RobotPlayer {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
+    static boolean nearbyRobot(RobotType target) throws GameActionException{
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for(RobotInfo r : robots){
+            if(r.getType() == target){
+                return true;
+            }
+        }
+        return false;
+    }
+
     static int turnCount;
     static MapLocation hqLoc;
     static int numMiners;
@@ -96,8 +106,12 @@ public strictfp class RobotPlayer {
             System.out.println("at the soup limit: " + rc.getSoupCarrying());
             // time to go back to HQ
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-            if(tryMove(dirToHQ)) {
+            if (tryMove(dirToHQ)) {
                 System.out.println("moved towards HQ");
+            }
+        } else if (!nearbyRobot(RobotType.FULFILLMENT_CENTER)){
+            if(tryBuild(RobotType.FULFILLMENT_CENTER,randomDirection())) {
+                System.out.println("I made a sad Amazon building!");
             }
         } else if (tryMove(randomDirection()))
             // otherwise, move randomly as usual
@@ -122,7 +136,7 @@ public strictfp class RobotPlayer {
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.DELIVERY_DRONE, dir);
+            if(tryBuild(RobotType.DELIVERY_DRONE, dir));
     }
 
     static void runLandscaper() throws GameActionException {
