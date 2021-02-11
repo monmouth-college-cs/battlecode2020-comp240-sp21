@@ -20,6 +20,7 @@ public strictfp class RobotPlayer {
     static int turnCount;
     static MapLocation hqLoc;
     static int numMiners = 0;
+    static int numDesign_Schools = 0;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -82,7 +83,6 @@ public strictfp class RobotPlayer {
                 }
             }
         }
-
         tryBlockchain();
         for (Direction dir : directions) {
             if (tryRefine(dir)) {
@@ -97,14 +97,15 @@ public strictfp class RobotPlayer {
         if (!nearbyRobot(RobotType.DESIGN_SCHOOL)) {
             if (tryBuild(RobotType.DESIGN_SCHOOL,randomDirection())) {
                 System.out.println("created a design school");
+                numDesign_Schools += 1;
             }
         }
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-            if (tryMove(dirToHQ))
+            if (goTo(dirToHQ))
                 System.out.println("moved towards HQ");
         }
-        else if (tryMove(randomDirection())) {
+        else if (goTo(randomDirection())) {
             System.out.println("I moved!");
         }
     }
@@ -193,6 +194,18 @@ public strictfp class RobotPlayer {
         //     return tryMove(Direction.WEST);
         // else
         //     return tryMove(Direction.NORTH);
+    }
+
+    // slightly better movement than tryMove
+    static boolean goTo(Direction dir) throws GameActionException {
+        Direction[] toTry = {dir, dir.rotateLeft(),dir.rotateRight(),
+                dir.rotateLeft().rotateLeft(),dir.rotateRight().rotateRight()};
+        for (Direction d : toTry) {
+            if (tryMove(d)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
