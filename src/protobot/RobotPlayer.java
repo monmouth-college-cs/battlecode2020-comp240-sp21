@@ -102,16 +102,6 @@ public strictfp class RobotPlayer {
     static void runMiner() throws GameActionException {
         MapLocation myLocation = rc.getLocation();
         tryBlockchain();
-        //tryMove(randomDirection());
-        //if (tryMove(randomDirection()))
-        //    System.out.println("I moved!");
-
-        //for (Direction dir : directions) {
-        //    MapLocation loc = myLocation.add(dir);
-        //    if (rc.canSenseLocation(loc)) {
-        //        //RobotInfo r = rc.senseSoup(loc);
-        //    }
-        //}
 
         MapLocation[] nearbySoup = rc.senseNearbySoup();
         RobotInfo[] nearRobots = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), rc.getTeam());
@@ -125,6 +115,12 @@ public strictfp class RobotPlayer {
                     objective = bot.getLocation();
                 }
             }
+        }
+
+        if (rc.getRoundNum() > 100) {
+            tryMove(randomDirection());
+            if (tryMove(randomDirection()))
+                System.out.println("I moved!");
         }
 
         for (MapLocation soupLocation : nearbySoup) { //Looks for near by soup to mine
@@ -284,7 +280,6 @@ public strictfp class RobotPlayer {
     /**
      * Attempts to move in a given direction.
      *
-     * @param dir The intended direction of movement
      * @return true if a move was performed
      * @throws GameActionException
      */
