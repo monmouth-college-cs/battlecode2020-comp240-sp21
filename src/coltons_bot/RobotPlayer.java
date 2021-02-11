@@ -19,6 +19,7 @@ public strictfp class RobotPlayer {
 
     static int turnCount;
     static MapLocation hqLoc;
+    static int numMiners = 0;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -64,8 +65,12 @@ public strictfp class RobotPlayer {
     }
 
     static void runHQ() throws GameActionException {
-        for (Direction dir : directions)
-            tryBuild(RobotType.MINER, dir);
+        if (numMiners < 8) {
+            for (Direction dir : directions)
+                if(tryBuild(RobotType.MINER, dir)){
+                    numMiners += 1;
+                }
+        }
     }
 
     static void runMiner() throws GameActionException {
@@ -79,19 +84,29 @@ public strictfp class RobotPlayer {
         }
 
         tryBlockchain();
-        for (Direction dir : directions)
-            if (tryRefine(dir))
+        for (Direction dir : directions) {
+            if (tryRefine(dir)) {
                 System.out.println("I refined soup! " + rc.getTeamSoup());
-        for (Direction dir : directions)
-            if (tryMine(dir))
+            }
+        }
+        for (Direction dir : directions) {
+            if (tryMine(dir)) {
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
-        if (rc.getSoupCarrying() == 100){
+            }
+        }
+        if (!nearbyRobot(RobotType.DESIGN_SCHOOL)) {
+            if (tryBuild(RobotType.DESIGN_SCHOOL,randomDirection())) {
+                System.out.println("created a design school");
+            }
+        }
+        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-            if(tryMove(dirToHQ))
+            if (tryMove(dirToHQ))
                 System.out.println("moved towards HQ");
         }
-        else if (tryMove(randomDirection()))
+        else if (tryMove(randomDirection())) {
             System.out.println("I moved!");
+        }
     }
 
     static void runRefinery() throws GameActionException {
@@ -152,6 +167,16 @@ public strictfp class RobotPlayer {
      */
     static RobotType randomSpawnedByMiner() {
         return spawnedByMiner[(int) (Math.random() * spawnedByMiner.length)];
+    }
+
+    static boolean nearbyRobot(RobotType target) throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for(RobotInfo r : robots) {
+            if(r.getType() == target) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean tryMove() throws GameActionException {
