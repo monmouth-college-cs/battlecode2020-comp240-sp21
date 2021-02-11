@@ -99,25 +99,28 @@ public strictfp class RobotPlayer {
         for (Direction dir : directions)
             if (tryRefine(dir))
                 System.out.println("I refined soup! " + rc.getTeamSoup());
+
+
         for (Direction dir : directions)
             if (tryMine(dir))
                 System.out.println("I mined soup! " + rc.getSoupCarrying());
+
+
+        if (!nearbyRobot(RobotType.FULFILLMENT_CENTER)) {
+            if (tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection())) {
+                System.out.println("I made a sad Amazon building!");
+            }
+        }
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             System.out.println("at the soup limit: " + rc.getSoupCarrying());
             // time to go back to HQ
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-            if (tryMove(dirToHQ)) {
+            if (tryMove(dirToHQ))
                 System.out.println("moved towards HQ");
-            }
-        } else if (!nearbyRobot(RobotType.FULFILLMENT_CENTER)){
-            if(tryBuild(RobotType.FULFILLMENT_CENTER,randomDirection())) {
-                System.out.println("I made a sad Amazon building!");
-            }
-        } else if (tryMove(randomDirection()))
+        } else if (tryMove(randomDirection())) {
             // otherwise, move randomly as usual
             System.out.println("I moved!");
-
-
+        }
 
     }
 
