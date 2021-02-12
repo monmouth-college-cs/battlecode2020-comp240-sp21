@@ -102,17 +102,29 @@ public strictfp class RobotPlayer {
 
 
     static void runMiner() throws GameActionException {
-        MapLocation myLocation = rc.getLocation();
+        MapLocation myLocation = rc.getLocation(), HqLocation = null;
         tryBlockchain();
 
         MapLocation[] nearSoup = rc.senseNearbySoup();
         RobotInfo[] nearRobots = rc.senseNearbyRobots(rc.getCurrentSensorRadiusSquared(), rc.getTeam());
         Direction target = null;
-        MapLocation objective = null;
+
+        if (hqLoc == null) {
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    HqLocation = robot.location;
+                }
+            }
+        }
 
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
-            target = rc.getLocation().directionTo(hqLoc);
-            if (movingTo(target)){
+            target = rc.getLocation().directionTo(HqLocation);
+            if(rc.canDepositSoup(target)){
+                if (tryRefine(target))
+                    System.out.println("I refined soup! " + rc.getTeamSoup());
+            }
+            else if (movingTo(target)) {
                 System.out.println("Going to refine soup");
             }
         }
@@ -131,11 +143,6 @@ public strictfp class RobotPlayer {
                 break;
             }
         }
-        //if (rc.getRoundNum() > 100) {
-        //    tryMove(randomDirection());
-        //    if (tryMove(randomDirection()))
-        //        System.out.println("I moved!");
-        //}
 
         if (RefineryExist == false) {
             for (Direction dir : directions) {
