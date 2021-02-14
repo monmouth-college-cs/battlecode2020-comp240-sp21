@@ -161,8 +161,10 @@ public strictfp class RobotPlayer {
             }
         }
         for (Direction dir : directions) {
-            if (tryDig(dir))
-                System.out.println("I dug dirt" + rc.getDirtCarrying());
+            if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
+                if (tryDig(dir))
+                    System.out.println("I dug dirt" + rc.getDirtCarrying());
+            }
         }
         if (nearbyRobot(RobotType.HQ)) {
             for (Direction dir : directions) {
