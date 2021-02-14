@@ -143,14 +143,31 @@ public strictfp class RobotPlayer {
     }
 
     static void runLandscaper() throws GameActionException {
-        tryBlockchain();
-        tryMove(randomDirection());
-        for (Direction dir : directions) {
-            if (tryDig(dir)) {
-                rc.getDirtCarrying();
+        if (hqLoc == null) {
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    hqLoc = robot.location;
+                }
             }
-            if (tryDeposit(dir)) {
-                rc.depositDirt(dir);
+        }
+        tryBlockchain();
+        if (nearbyRobot(RobotType.HQ)) {
+            for (Direction dir : directions) {
+                if (tryDeposit(dir))
+                    System.out.println("I deposited dirt" + rc.getDirtCarrying());
+            }
+        }
+        for (Direction dir : directions) {
+            if (tryDig(dir))
+                System.out.println("I dug dirt" + rc.getDirtCarrying());
+        }
+        for (Direction dir : directions) {
+            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+                if (tryMove(dirToHQ)) {
+                    System.out.println("Moved towards HQ");
+                }
             }
         }
     }
