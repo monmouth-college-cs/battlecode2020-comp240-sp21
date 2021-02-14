@@ -154,9 +154,15 @@ public strictfp class RobotPlayer {
         tryBlockchain();
         for (Direction dir : directions) {
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
-                Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-                if (tryMove(dirToHQ)) {
-                    System.out.println("Moved towards HQ");
+                if(hqLoc != null){
+                    Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+                    if (goTo(dirToHQ)) {
+                        System.out.println("Moved towards HQ");
+                    }
+                } else {
+                    if (tryMove(randomDirection())){
+                        System.out.println("moved in random direction");
+                    }
                 }
             }
         }
