@@ -108,8 +108,12 @@ public strictfp class RobotPlayer {
             }
         }
         // try to randomly spawn bot
-        if (spawnMinerBots()) {
-            System.out.println("Spawned a bot");
+        if(turnCount<500){
+            if (spawnMinerBots()) {
+                System.out.println("Spawned a bot");
+        }else if(tryBuild(RobotType.VAPORATOR, randomDirection())){
+            System.out.println("I made a Vaporator!");
+            }
         }
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
@@ -131,15 +135,19 @@ public strictfp class RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
         for (Direction dir : directions){
-            if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
-                System.out.println("landscaper!");
+            if(turnCount<300){
+                if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
+                    System.out.println("landscaper!");
+                }
             }
         }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.DELIVERY_DRONE, dir);
+            if(turnCount<300){
+                tryBuild(RobotType.DELIVERY_DRONE, dir);
+            }
     }
 
     static void runLandscaper() throws GameActionException {
