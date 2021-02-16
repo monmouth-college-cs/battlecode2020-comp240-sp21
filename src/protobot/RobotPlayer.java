@@ -81,8 +81,9 @@ public strictfp class RobotPlayer {
                     hqLoc = robot.location;
                 }
             }
-        } else {
-            System.out.println("HQ loc: " + hqLoc);
+            if(hqLoc == null) {
+                hqLoc = HQLocFromChain();
+        }
         }
     }
 
@@ -198,13 +199,21 @@ public strictfp class RobotPlayer {
             tryDig();
         }
         if (hqLoc != null) {
+            MapLocation bestPlaceToBuildWall = null;
+            int lowestElevation = -99999999;
             for (Direction dir : directions) {
                 MapLocation tiletoCheck = hqLoc.add(dir);
                 if (rc.getLocation().distanceSquaredTo(tiletoCheck) < 4
                         && rc.canDepositDirt(rc.getLocation().directionTo(tiletoCheck))) {
-                    rc.depositDirt(rc.getLocation().directionTo(tiletoCheck));
-                    System.out.println("built a wall");
+                    if (rc.senseElevation(tiletoCheck) < lowestElevation) {
+                        lowestElevation = rc.senseElevation(tiletoCheck);
+                        bestPlaceToBuildWall = tiletoCheck;
+                    }
+                    }
                 }
+            if (bestPlaceToBuildWall != null) {
+                rc.depositDirt(rc.getLocation().directionTo(bestPlaceToBuildWall));
+                System.out.println("building a wall");
             }
         }
         tryMove(randomDirection());
@@ -371,5 +380,32 @@ public strictfp class RobotPlayer {
                 rc.submitTransaction(message, 10);
         }
         // System.out.println(rc.getRoundMessages(turnCount-1));
+    }
+
+    static final int teamSecretCode = 666666666;
+    static final String[] messageType = {"HQ loc", };
+
+    public static void sendHqLoc(MapLocation loc) throws GameActionException {
+        int[] message = new int[7];
+        message[0] = teamSecretCode;
+        message[1] = 0;
+        message[2] = loc.x; // this is the x coordinate of our HQ
+        message[3] = loc.y; // this is the y coord
+        if (rc.canSubmitTransaction(message, 3))
+            rc.submitTransaction(message, 3);
+    }
+    public static MapLocation HQLocFromChain() throws GameActionException {
+        System.out.println("Getting from Blockchain");
+        for (int i = 1; i < rc.getRoundNum(); i++){
+            for(Transaction tr : rc.getBlock(i)) {
+                int[] mes = tr.getMessage();
+                if(mes[0] == teamSecretCode && mes[1] == 0){
+                    System.out.println("found hq");
+                    hqLoc = new MapLocation(mes[2], mes[3]);
+                    System.out.println(hqLoc);
+                }
+            }
+        }
+        return null;
     }
 }
