@@ -214,7 +214,7 @@ public strictfp class RobotPlayer {
                 System.out.println("I picked up " + robots[0].getID() + "!");
             }
         } else {
-            // No close robots, so search for robots within sight radius
+            // No close robots, so search for robots within short radius
             tryMove(randomDirection());
         }
     }
