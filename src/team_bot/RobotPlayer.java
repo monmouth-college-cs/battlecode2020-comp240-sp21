@@ -108,8 +108,12 @@ public strictfp class RobotPlayer {
             }
         }
         // try to randomly spawn bot
-        if (spawnMinerBots()) {
-            System.out.println("Spawned a bot");
+        if(turnCount<500){
+            if (spawnMinerBots()) {
+                System.out.println("Spawned a bot");
+        }else if(tryBuild(RobotType.VAPORATOR, randomDirection())){
+            System.out.println("I made a Vaporator!");
+            }
         }
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
@@ -131,28 +135,59 @@ public strictfp class RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
         for (Direction dir : directions){
-            if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
-                System.out.println("landscaper!");
+            if(turnCount<300){
+                if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
+                    System.out.println("landscaper!");
+                }
             }
         }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.DELIVERY_DRONE, dir);
+            if(turnCount<300){
+                tryBuild(RobotType.DELIVERY_DRONE, dir);
+            }
     }
 
     static void runLandscaper() throws GameActionException {
-        tryBlockchain();
-        tryMove(randomDirection());
-        for (Direction dir : directions) {
-            if (tryDig(dir)) {
-                rc.getDirtCarrying();
-            }
-            if (tryDeposit(dir)) {
-                rc.depositDirt(dir);
+        if (hqLoc == null) {
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    hqLoc = robot.location;
+                }
             }
         }
+        tryBlockchain();
+        for (Direction dir : directions) {
+            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                if(hqLoc != null){
+                    Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+                    if (goTo(dirToHQ)) {
+                        System.out.println("Moved towards HQ");
+                    }
+                } else {
+                    if (tryMove(randomDirection())){
+                        System.out.println("moved in random direction");
+                    }
+                }
+            }
+        }
+        for (Direction dir : directions) {
+            if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
+                if (tryDig(dir))
+                    System.out.println("I dug dirt" + rc.getDirtCarrying());
+            }
+        }
+        if (nearbyRobot(RobotType.HQ)) {
+            for (Direction dir : directions) {
+                if (tryDeposit(dir))
+                    System.out.println("I deposited dirt" + rc.getDirtCarrying());
+            }
+        }
+
+
     }
 
     static void runDeliveryDrone() throws GameActionException {
