@@ -219,7 +219,7 @@ public strictfp class RobotPlayer {
             if (robots.length > 0) {
                 // Pick up a first robot within range
                 rc.pickUpUnit(robots[0].getID());
-                System.out.println("I picked up " + robots[0].getID() + "!");
+                System.out.println("Hey, I picked up " + robots[0].getID() + "!");
             }
         } else {
             // No close robots, so search for robots within short radius
@@ -350,7 +350,7 @@ public strictfp class RobotPlayer {
      * Attempts to refine soup in a given direction.
      *
      * @param dir The intended direction of refining
-     * @return true if a move was performed
+     * @return true if any move was performed
      * @throws GameActionException
      */
     static boolean tryRefine(Direction dir) throws GameActionException {
