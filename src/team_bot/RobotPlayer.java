@@ -164,30 +164,27 @@ public strictfp class RobotPlayer {
             if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
                 if(hqLoc != null){
                     Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
-                    if (goTo(dirToHQ)) {
-                        System.out.println("Moved towards HQ");
+                    if(!closeToHQ(hqLoc)){
+                        if (goTo(dirToHQ)) {
+                            System.out.println("Moved towards HQ");
+                        }
                     }
                 } else {
                     if (tryMove(randomDirection())){
                         System.out.println("moved in random direction");
                     }
                 }
+            } else {
+                    if (tryDig(dir))
+                        System.out.println("I dug dirt" + rc.getDirtCarrying());
             }
         }
-        for (Direction dir : directions) {
-            if (rc.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit) {
-                if (tryDig(dir))
-                    System.out.println("I dug dirt" + rc.getDirtCarrying());
-            }
-        }
-        if (nearbyRobot(RobotType.HQ)) {
+        while(closeToHQ(hqLoc) && rc.getDirtCarrying()!=0) {
             for (Direction dir : directions) {
                 if (tryDeposit(dir))
                     System.out.println("I deposited dirt" + rc.getDirtCarrying());
             }
         }
-
-
     }
 
     static void runDeliveryDrone() throws GameActionException {
@@ -285,6 +282,23 @@ public strictfp class RobotPlayer {
             rc.digDirt(dir);
             return true;
         }   else return false;
+    }
+
+
+    static boolean closeToHQ(MapLocation HQLoc) {
+        MapLocation robotLoc = rc.getLocation();
+        if(HQLoc==null){
+            return false;
+        }
+        if (robotLoc.x == HQLoc.x + 1 || robotLoc.x == HQLoc.x - 1) {
+            if (robotLoc.y == HQLoc.y + 1 || robotLoc.y == HQLoc.y - 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     static boolean tryMove() throws GameActionException {
