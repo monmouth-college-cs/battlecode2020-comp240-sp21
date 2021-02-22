@@ -290,8 +290,8 @@ public strictfp class RobotPlayer {
         if(HQLoc==null){
             return false;
         }
-        if (robotLoc.x == HQLoc.x + 1 || robotLoc.x == HQLoc.x - 1) {
-            if (robotLoc.y == HQLoc.y + 1 || robotLoc.y == HQLoc.y - 1) {
+        if (robotLoc.x == HQLoc.x + 1 || robotLoc.x == HQLoc.x - 1 || robotLoc.x == HQLoc.x) {
+            if (robotLoc.y == HQLoc.y + 1 || robotLoc.y == HQLoc.y - 1 || robotLoc.y ==HQLoc.y) {
                 return true;
             } else {
                 return false;
