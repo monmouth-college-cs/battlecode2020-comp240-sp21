@@ -279,7 +279,7 @@ public strictfp class RobotPlayer {
     static boolean movingTo(Direction dir) throws GameActionException {
         Direction[] options = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
         for (Direction direction : options) {
-            if (tryMove(direction)) {
+            if (tryMove(direction) && !rc.senseFlooding(rc.adjacentLocation(direction))) {
                 return true;
             }
         }
