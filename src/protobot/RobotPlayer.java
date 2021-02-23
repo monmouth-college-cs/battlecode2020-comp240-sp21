@@ -304,28 +304,6 @@ public strictfp class RobotPlayer {
         return spawnedByMiner[(int) (Math.random() * spawnedByMiner.length)];
     }
 
-    static boolean tryMove() throws GameActionException {
-        for (Direction dir : directions)
-            if (tryMove(dir))
-                return true;
-        return false;
-        // MapLocation loc = rc.getLocation();
-        // if (loc.x < 10 && loc.x < loc.y)
-        //     return tryMove(Direction.EAST);
-        // else if (loc.x < 10)
-        //     return tryMove(Direction.SOUTH);
-        // else if (loc.x > loc.y)
-        //     return tryMove(Direction.WEST);
-        // else
-        //     return tryMove(Direction.NORTH);
-    }
-
-    /**
-     * Attempts to move in a given direction.
-     *
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
     static boolean tryDig() throws GameActionException {
         Direction dir = randomDirection();
         if (rc.canDigDirt(dir)) {
@@ -337,7 +315,7 @@ public strictfp class RobotPlayer {
 
     static boolean tryMove(Direction dir) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
-        if (rc.isReady() && rc.canMove(dir)) {
+        if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.adjacentLocation(dir))) {
             rc.move(dir);
             return true;
         } else return false;
