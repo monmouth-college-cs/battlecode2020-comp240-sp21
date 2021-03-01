@@ -109,7 +109,7 @@ public strictfp class RobotPlayer {
         if (hqLoc == null) {
             findHQ();
         }
-        if (NMiners < 6 || (rc.getRoundNum() < 100)) {
+        if (NMiners < 6 || (rc.getRoundNum() < 80)) {
             for (Direction dir : directions) {
                 if (rc.canBuildRobot(RobotType.MINER, dir)) {
                     rc.buildRobot(RobotType.MINER, dir);
@@ -124,7 +124,7 @@ public strictfp class RobotPlayer {
         MapLocation myLocation = rc.getLocation(); //Identify robot and HQ locations
         tryBlockchain();
 
-        MapLocation[] nearSoup = rc.senseNearbySoup();  //Identify soup locations
+        MapLocation[] nearSoup;  //Identify soup locations
         Direction target = null;  //Variable that will storage a direction to move next time
 
         if (hqLoc == null) { //Locate HQ if it has not been located
@@ -155,7 +155,7 @@ public strictfp class RobotPlayer {
             }
         }
 
-        if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {  //If the miner has reached the limit of soup, proceeds to refine it
+        if (rc.getSoupCarrying() > 3*(RobotType.MINER.soupLimit/4)) {  //If the miner has reached the limit of soup, proceeds to refine it
             target = rc.getLocation().directionTo(hqLoc);    //Define the direction to HQ as target
             if (rc.canDepositSoup(target)) { //Checks if HQ is at that direction to drop the soap
                 if (tryRefine(target))     //Tries to refine the soup
@@ -164,6 +164,7 @@ public strictfp class RobotPlayer {
                 System.out.println("Going to refine soup");
             }
         } else {  //In the case it has space to keep looking for soup
+            nearSoup = rc.senseNearbySoup();
             for (MapLocation Soup : nearSoup) {  //Loop through the soup locations
                 if (rc.canMineSoup(myLocation.directionTo(Soup))) { //Checks if it is possible to mine
                     rc.mineSoup(myLocation.directionTo(Soup));  //Mines
@@ -276,8 +277,8 @@ public strictfp class RobotPlayer {
     }
 
     static boolean movingTo(Direction dir) throws GameActionException {
-        Direction[] toTry = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
-        for (Direction direction : toTry) {
+        Direction[] options = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
+        for (Direction direction : options) {
             if (tryMove(direction)) {
                 return true;
             }
@@ -303,28 +304,6 @@ public strictfp class RobotPlayer {
         return spawnedByMiner[(int) (Math.random() * spawnedByMiner.length)];
     }
 
-    static boolean tryMove() throws GameActionException {
-        for (Direction dir : directions)
-            if (tryMove(dir))
-                return true;
-        return false;
-        // MapLocation loc = rc.getLocation();
-        // if (loc.x < 10 && loc.x < loc.y)
-        //     return tryMove(Direction.EAST);
-        // else if (loc.x < 10)
-        //     return tryMove(Direction.SOUTH);
-        // else if (loc.x > loc.y)
-        //     return tryMove(Direction.WEST);
-        // else
-        //     return tryMove(Direction.NORTH);
-    }
-
-    /**
-     * Attempts to move in a given direction.
-     *
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
     static boolean tryDig() throws GameActionException {
         Direction dir = randomDirection();
         if (rc.canDigDirt(dir)) {
@@ -336,7 +315,7 @@ public strictfp class RobotPlayer {
 
     static boolean tryMove(Direction dir) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
-        if (rc.isReady() && rc.canMove(dir)) {
+        if (rc.isReady() && rc.canMove(dir) && !rc.senseFlooding(rc.adjacentLocation(dir))) {
             rc.move(dir);
             return true;
         } else return false;
