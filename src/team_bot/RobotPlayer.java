@@ -97,6 +97,16 @@ public strictfp class RobotPlayer {
             }
         }
         tryBlockchain();
+
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        for (RobotInfo robot: robots){
+            if((robot.type == RobotType.FULFILLMENT_CENTER || robot.type == RobotType.DELIVERY_DRONE) && robot.team == rc.getTeam()){
+                numFulfillment_Centers+=1;
+            } else if((robot.type == RobotType.DESIGN_SCHOOL || robot.type == RobotType.LANDSCAPER) && robot.team == rc.getTeam()){
+                numDesign_Schools+=1;
+            }
+
+        }
         for (Direction dir : directions) {
             if (tryRefine(dir)) {
                 System.out.println("I refined soup! " + rc.getTeamSoup());
@@ -108,15 +118,25 @@ public strictfp class RobotPlayer {
             }
         }
         // try to randomly spawn bot
-        if (spawnMinerBots()) {
+
+        if (spawnFullCenterAndDesign()) {
             System.out.println("Spawned a bot");
         }
+
         if (rc.getSoupCarrying() == RobotType.MINER.soupLimit) {
             Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
             if (goTo(dirToHQ))
                 System.out.println("moved towards HQ");
+        } else {
+            MapLocation[] soups = rc.senseNearbySoup();
+            for (MapLocation soup : soups) {
+                Direction soupDir=rc.getLocation().directionTo(soup);
+                goTo(soupDir);
         }
-        else if (goTo(randomDirection())) {
+
+        }
+
+        if (goTo(randomDirection())) {
             System.out.println("I moved!");
         }
     }
@@ -131,26 +151,54 @@ public strictfp class RobotPlayer {
 
     static void runDesignSchool() throws GameActionException {
         for (Direction dir : directions){
-            if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
-                System.out.println("landscaper!");
+            if(turnCount<300){
+                if (tryBuild(RobotType.LANDSCAPER, dir) && numLandscapers <= 1){
+                    System.out.println("landscaper!");
+                }
             }
         }
     }
 
     static void runFulfillmentCenter() throws GameActionException {
         for (Direction dir : directions)
-            tryBuild(RobotType.DELIVERY_DRONE, dir);
+            if(turnCount<300){
+                tryBuild(RobotType.DELIVERY_DRONE, dir);
+            }
     }
 
     static void runLandscaper() throws GameActionException {
-        tryBlockchain();
-        tryMove(randomDirection());
-        for (Direction dir : directions) {
-            if (tryDig(dir)) {
-                rc.getDirtCarrying();
+        if (hqLoc == null) {
+            RobotInfo[] robots = rc.senseNearbyRobots();
+            for (RobotInfo robot : robots) {
+                if (robot.type == RobotType.HQ && robot.team == rc.getTeam()) {
+                    hqLoc = robot.location;
+                }
             }
-            if (tryDeposit(dir)) {
-                rc.depositDirt(dir);
+        }
+        tryBlockchain();
+        for (Direction dir : directions) {
+            if (rc.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                if(hqLoc != null){
+                    Direction dirToHQ = rc.getLocation().directionTo(hqLoc);
+                    if(!closeToHQ(hqLoc)){
+                        if (goTo(dirToHQ)) {
+                            System.out.println("Moved towards HQ");
+                        }
+                    }
+                } else {
+                    if (tryMove(randomDirection())){
+                        System.out.println("moved in random direction");
+                    }
+                }
+            } else {
+                    if (tryDig(dir))
+                        System.out.println("I dug dirt" + rc.getDirtCarrying());
+            }
+        }
+        while(closeToHQ(hqLoc) && rc.getDirtCarrying()!=0) {
+            for (Direction dir : directions) {
+                if (tryDeposit(dir))
+                    System.out.println("I deposited dirt" + rc.getDirtCarrying());
             }
         }
     }
@@ -245,11 +293,46 @@ public strictfp class RobotPlayer {
         return false;
     }
 
+    static boolean spawnFullCenterAndDesign() throws GameActionException {
+        // make bots
+        if (numDesign_Schools <= 1) {
+            if (tryBuild(RobotType.DESIGN_SCHOOL, randomDirection())) {
+                System.out.println("created a design school");
+                numDesign_Schools += 1;
+                return true;
+            }
+        } else if (numFulfillment_Centers <= 1) {
+            if (tryBuild(RobotType.FULFILLMENT_CENTER, randomDirection())) {
+                System.out.println("created a fulfillment center");
+                numFulfillment_Centers += 1;
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean tryDig(Direction dir) throws GameActionException {
         if (rc.isReady() && rc.canDigDirt(dir)) {
             rc.digDirt(dir);
             return true;
         }   else return false;
+    }
+
+
+    static boolean closeToHQ(MapLocation HQLoc) {
+        MapLocation robotLoc = rc.getLocation();
+        if(HQLoc==null){
+            return false;
+        }
+        if (robotLoc.x == HQLoc.x + 1 || robotLoc.x == HQLoc.x - 1 || robotLoc.x == HQLoc.x) {
+            if (robotLoc.y == HQLoc.y + 1 || robotLoc.y == HQLoc.y - 1 || robotLoc.y ==HQLoc.y) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     static boolean tryMove() throws GameActionException {
