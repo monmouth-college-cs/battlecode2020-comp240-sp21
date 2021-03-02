@@ -241,13 +241,15 @@ public strictfp class RobotPlayer {
             // See if there are any enemy robots within capturing range
             RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED, enemy);
             for (int i = 0; i < robots.length; i++) if(robots[i].team == rc.getTeam().opponent())
-            if (robots.length > 0) {
+            if (robots.length > 0) if (robots[i].type == RobotType.LANDSCAPER){
                 // Pick up a first robot within range
                 rc.pickUpUnit(robots[0].getID());
                 System.out.println("Hey, I picked up " + robots[0].getID() + "!");
+
             }
         } else {
             // No close robots,so search for robots within short radius
+            rc.dropUnit(Direction.NORTHWEST);
             tryMove(randomDirection());
         }
     }
