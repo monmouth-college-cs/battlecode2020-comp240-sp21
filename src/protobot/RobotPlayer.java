@@ -13,6 +13,7 @@ public strictfp class RobotPlayer {
     static int numDesignSchool = 0;
     static int numFulfillment = 0;
     static int numRefinery = 0;
+    static int numLandscaper = 0;
 
     static Direction[] directions = {
             Direction.NORTH,
@@ -65,7 +66,9 @@ public strictfp class RobotPlayer {
                         runVaporator();
                         break;
                     case DESIGN_SCHOOL:
-                        runDesignSchool();
+                        if (numLandscaper < 10) {
+                            runDesignSchool();
+                        }
                         break;
                     case FULFILLMENT_CENTER:
                         runFulfillmentCenter();
@@ -148,7 +151,7 @@ public strictfp class RobotPlayer {
             }
         }
 
-        if (numRefinery < 2) {
+        if (numRefinery < 2 && numDesignSchool >= 2) {
             for (Direction dir : directions) {
                 if (rc.canBuildRobot(RobotType.REFINERY, dir)) {
                     rc.buildRobot(RobotType.REFINERY, dir);
@@ -180,7 +183,7 @@ public strictfp class RobotPlayer {
             }
         }
 
-        if (numFulfillment < 2) {
+        if (numFulfillment < 2 && numRefinery >= 2) {
             for (Direction dir : directions) {
                 if (rc.canBuildRobot(RobotType.FULFILLMENT_CENTER, dir)) {
                     rc.buildRobot(RobotType.FULFILLMENT_CENTER, dir);
@@ -202,20 +205,25 @@ public strictfp class RobotPlayer {
     }
 
     static void runDesignSchool() throws GameActionException {
+        updateLandscaperCount();
         if (!broadcastedDesignCreation){
             broadcastDesignSchoolCreation(rc.getLocation());
         }
-        for (Direction dir : directions) {
-            tryBuild(RobotType.LANDSCAPER, dir);
+            for (Direction dir : directions) {
+                if (tryBuild(RobotType.LANDSCAPER, dir)){
+                    broadcastLandscapeCreation(rc.getLocation());
+            }
         }
     }
+
 
     static void runFulfillmentCenter() throws GameActionException {
         if (!broadcastedFufillmentCreation){
             broadcastFufillmentCreation(rc.getLocation());
         }
-        for (Direction dir : directions)
+        for (Direction dir : directions) {
             tryBuild(RobotType.DELIVERY_DRONE, dir);
+        }
     }
 
     static void runLandscaper() throws GameActionException {
@@ -385,7 +393,7 @@ public strictfp class RobotPlayer {
     //}
 
     static final int teamSecretCode = 666666666;
-    static final String[] messageType = {"HQ loc", "design school exists", "Refinery exists","Fufillment exists"};
+    static final String[] messageType = {"HQ loc", "design school exists", "Refinery exists","Fufillment exists","there is a landscaper"};
 
     public static void sendHqLoc(MapLocation loc) throws GameActionException {
         int[] message = new int[7];
@@ -414,6 +422,7 @@ public strictfp class RobotPlayer {
     public static boolean broadcastedRefineryCreation = false;
     public static boolean broadcastedDesignCreation = false;
     public static boolean broadcastedFufillmentCreation = false;
+    public static boolean broadcastedLandscapeCreation = false;
 
     public static void broadcastDesignSchoolCreation(MapLocation loc) throws GameActionException {
         int[] message = new int[7];
@@ -459,7 +468,7 @@ public strictfp class RobotPlayer {
         int[] message = new int[7];
         message[0] = teamSecretCode;
         message[1] = 3;
-        message[2] = loc.x; // this is the x coordinate of our refinery
+        message[2] = loc.x; // this is the x coordinate of our fufillment
         message[3] = loc.y; // this is the y coord
         if (rc.canSubmitTransaction(message, 3)) {
             rc.submitTransaction(message, 3);
@@ -472,6 +481,26 @@ public strictfp class RobotPlayer {
             if (mes[0] == teamSecretCode && mes[1] == 3) {
                 System.out.println("found fufil");
                 numFulfillment += 1;
+            }
+        }
+    }
+    public static void broadcastLandscapeCreation(MapLocation loc) throws GameActionException {
+        int[] message = new int[7];
+        message[0] = teamSecretCode;
+        message[1] = 4;
+        message[2] = loc.x; // this is the x coordinate of our landscaper
+        message[3] = loc.y; // this is the y coord
+        if (rc.canSubmitTransaction(message, 3)) {
+            rc.submitTransaction(message, 3);
+            broadcastedLandscapeCreation = true;
+        }
+    }
+    public static void updateLandscaperCount() throws GameActionException {
+        for (Transaction tr : rc.getBlock(rc.getRoundNum() - 1)) {
+            int[] mes = tr.getMessage();
+            if (mes[0] == teamSecretCode && mes[1] == 4) {
+                System.out.println("found a landscaper");
+                numLandscaper += 1;
             }
         }
     }
