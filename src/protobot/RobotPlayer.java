@@ -110,7 +110,7 @@ public strictfp class RobotPlayer {
         if (hqLoc == null) {
             findHQ();
         }
-        if (NMiners < 6 || (rc.getRoundNum() < 80)) {
+        if (NMiners < 6 || (rc.getRoundNum() < 50)) {
             for (Direction dir : directions) {
                 if (rc.canBuildRobot(RobotType.MINER, dir)) {
                     rc.buildRobot(RobotType.MINER, dir);
