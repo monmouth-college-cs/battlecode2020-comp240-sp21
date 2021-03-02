@@ -30,6 +30,7 @@ public strictfp class RobotPlayer {
     // designate a spawnedByMiner bot for this bot to spawn if its a miner
     static RobotType miner_bot_spawn;
     static int numLandscapers = 0;
+    static int elevate;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -197,8 +198,16 @@ public strictfp class RobotPlayer {
         }
         while(closeToHQ(hqLoc) && rc.getDirtCarrying()!=0) {
             for (Direction dir : directions) {
-                if (tryDeposit(dir))
-                    System.out.println("I deposited dirt" + rc.getDirtCarrying());
+                Direction hqDir = rc.getLocation().directionTo(hqLoc);
+                MapLocation dirLoc = rc.adjacentLocation(dir);
+                elevate=rc.senseElevation(dirLoc);
+                if (dir == hqDir) {
+                    System.out.println("I broke!");
+                } else if(elevate<=13){
+                    System.out.println("I didn't break!");
+                    if (tryDeposit(dir))
+                        System.out.println("I deposited dirt" + rc.getDirtCarrying());
+                }
             }
         }
     }
@@ -221,7 +230,14 @@ public strictfp class RobotPlayer {
     }
 
     static void runNetGun() throws GameActionException {
-
+        Team enemy = rc.getTeam().opponent();
+        RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.NET_GUN_SHOOT_RADIUS_SQUARED,enemy);
+        for (RobotInfo robot: robots){
+            if(robot.type==RobotType.DELIVERY_DRONE){
+                int robotIdent=(robot.getID());
+                rc.shootUnit(robotIdent);
+            }
+        }
     }
 
     /**
