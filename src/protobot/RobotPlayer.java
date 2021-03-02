@@ -68,7 +68,7 @@ public strictfp class RobotPlayer {
                         break;
                     case DESIGN_SCHOOL:
                         if (numLandscaper < 10) {
-                            runDesignSchool();
+                            runDesignSchool(); //doesnt run design school if no need
                         }
                         break;
                     case FULFILLMENT_CENTER:
