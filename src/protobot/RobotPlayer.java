@@ -191,7 +191,7 @@ public strictfp class RobotPlayer {
                 }
             }
         }
-
+        tryMove(randomDirection());
 
     }
 
