@@ -240,7 +240,7 @@ public strictfp class RobotPlayer {
         if (!rc.isCurrentlyHoldingUnit()) {
             // See if there are any enemy robots within capturing range
             RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED, enemy);
-
+            for (int i = 0; i < robots.length; i++) if(robots[i].team == rc.getTeam().opponent())
             if (robots.length > 0) {
                 // Pick up a first robot within range
                 rc.pickUpUnit(robots[0].getID());
