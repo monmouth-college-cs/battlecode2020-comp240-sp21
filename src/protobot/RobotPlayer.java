@@ -4,6 +4,7 @@ import sun.font.TrueTypeFont;
 
 import java.text.BreakIterator;
 
+import static battlecode.common.GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED;
 import static battlecode.common.Team.A;
 import static battlecode.common.Team.B;
 
@@ -245,20 +246,42 @@ public strictfp class RobotPlayer {
 
     static void runDeliveryDrone() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
+        boolean carryingEnemy;
         if (!rc.isCurrentlyHoldingUnit()) {
             // See if there are any enemy robots within capturing range
-            RobotInfo[] robots = rc.senseNearbyRobots(GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED, enemy);
-            for (int i = 0; i < robots.length; i++) if(robots[i].team == rc.getTeam().opponent())
-            if (robots.length > 0) if (robots[i].type == RobotType.LANDSCAPER){
-                // Pick up a first robot within range
-                rc.pickUpUnit(robots[0].getID());
-                System.out.println("Hey, I picked up " + robots[0].getID() + "!");
-
+            RobotInfo[] robots = rc.senseNearbyRobots(DELIVERY_DRONE_PICKUP_RADIUS_SQUARED, enemy);
+            RobotInfo nearest = null;
+            MapLocation myLocation = rc.getLocation();
+            int distToNearest = DELIVERY_DRONE_PICKUP_RADIUS_SQUARED;
+            for (RobotInfo enemyRobot : robots) {
+                if (enemyRobot.type == RobotType.DELIVERY_DRONE
+                        || enemyRobot.type == RobotType.FULFILLMENT_CENTER || enemyRobot.type == RobotType.HQ
+                        || enemyRobot.type == RobotType.NET_GUN || enemyRobot.type == RobotType.REFINERY
+                        || enemyRobot.type == RobotType.DESIGN_SCHOOL || enemyRobot.type == RobotType.VAPORATOR)
+                    continue;
+                int distToEnemy = myLocation.distanceSquaredTo(enemyRobot.location);
+                if (distToEnemy < distToNearest) {
+                    nearest = enemyRobot;
+                    distToNearest = distToEnemy;
+                }
             }
-        } else {
-            // No close robots,so search for robots within short radius
-            rc.dropUnit(Direction.NORTHWEST);
-            tryMove(randomDirection());
+            if (distToNearest <= GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED) {
+                rc.pickUpUnit(nearest.getID());
+                carryingEnemy = true;
+                if (carryingEnemy= true) {
+                    rc.dropUnit(Direction.WEST);
+                }
+            }
+            else {
+                // No close robots, so search for robots within sight radius
+                tryMove(randomDirection());
+            }
+
+            // if (robots.length > 0) {
+            // Pick up a first robot within range
+            //   rc.pickUpUnit(robots[0].getID());
+            // System.out.println("I picked up " + robots[0].getID() + "!");
+            //   }
         }
     }
 
