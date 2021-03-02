@@ -13,7 +13,7 @@ public strictfp class RobotPlayer {
     static int numDesignSchool = 0;
     static int numFulfillment = 0;
     static int numRefinery = 0;
-    static int numLandscaper = 0;
+    static int numLandscaper= 0;
 
     static Direction[] directions = {
             Direction.NORTH,
